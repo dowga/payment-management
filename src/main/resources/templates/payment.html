@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Платёж</title>
+</head>
+<body>
+
+<h2>Информация о платеже</h2>
+
+<p><b>ID:</b> <span th:text="${payment.id}"></span></p>
+<p><b>Сумма:</b> <span th:text="${payment.amount}"></span></p>
+<p><b>Получатель:</b> <span th:text="${payment.recipient}"></span></p>
+<p><b>ИНН:</b> <span th:text="${payment.inn}"></span></p>
+<p><b>Назначение:</b> <span th:text="${payment.purpose}"></span></p>
+<p><b>Статус:</b> <span th:text="${payment.status}"></span></p>
+<p><b>Дата:</b> <span th:text="${payment.createdAt}"></span></p>
+
+<a href="/">Назад</a>
+
+</body>
+</html>

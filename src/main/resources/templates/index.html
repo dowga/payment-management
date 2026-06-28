@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Платежи</title>
+</head>
+<body>
+
+<h3>Поиск платежа по ID</h3>
+
+<form action="/payment" method="get">
+    <input type="number" name="id" placeholder="ID платежа" required>
+    <button type="submit">Найти</button>
+</form>
+
+<hr>
+
+<h1>Все платежи</h1>
+<table border="1">
+    <tr>
+        <th>ID</th><th>Сумма</th><th>Получатель</th><th>ИНН</th><th>Назначение</th><th>Статус</th><th>Дата</th><th>Действие</th>
+    </tr>
+    <tr th:each="p : ${payments}">
+        <td th:text="${p.id}">ID</td>
+        <td th:text="${p.amount}">Сумма</td>
+        <td th:text="${p.recipient}">Получатель</td>
+        <td th:text="${p.inn}">ИНН</td>
+        <td th:text="${p.purpose}">Назначение</td>
+        <td th:text="${p.status}">Статус</td>
+        <td th:text="${p.createdAt}">Дата</td>
+        <td>
+            <form th:action="@{/delete/{id}(id=${p.id})}" method="post">
+                <button type="submit" onclick="return confirm('Удалить платёж?');">
+                    Удалить
+                </button>
+            </form>
+        </td>
+    </tr>
+</table>
+
+<h2>Новый платёж</h2>
+<form th:action="@{/payments}" th:object="${payment}" method="post">
+    Сумма: <input type="text" th:field="*{amount}" /><br/>
+    Получатель: <input type="text" th:field="*{recipient}" /><br/>
+    ИНН: <input type="text" th:field="*{inn}" /><br/>
+    Назначение: <input type="text" th:field="*{purpose}" /><br/>
+    <button type="submit">Создать платёж</button>
+</form>
+
+</body>
+</html>
