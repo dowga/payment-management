@@ -1,22 +1,32 @@
 package com.service;
 
 import com.entity.Payment;
+import com.entity.Currency;
+import org.springframework.data.jpa.domain.Specification;
 import com.repository.PaymentRepository;
 import com.service.exception.PaymentNotFoundException;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Service
 public class PaymentService {
+
     @Autowired
     private PaymentRepository paymentRepository;
 
     public Payment createPayment(Payment payment) {
-        payment.setCreatedAt(LocalDate.now());
+        LocalDate now = LocalDate.now();
+
+        payment.setCreatedAt(now);
+        payment.setUpdatedAt(now);
         payment.setStatus("created");
+
         return paymentRepository.save(payment);
     }
 
@@ -31,5 +41,74 @@ public class PaymentService {
     public Payment getPaymentById(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new PaymentNotFoundException(id));
+    }
+
+    public Payment updatePayment(Long id, Payment updatedPayment) {
+
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new PaymentNotFoundException(id));
+
+        payment.setAmount(updatedPayment.getAmount());
+        payment.setRecipient(updatedPayment.getRecipient());
+        payment.setInn(updatedPayment.getInn());
+        payment.setPurpose(updatedPayment.getPurpose());
+        payment.setDescription(updatedPayment.getDescription());
+        payment.setCreatedBy(updatedPayment.getCreatedBy());
+        payment.setCurrency(updatedPayment.getCurrency());
+        payment.setPaymentType(updatedPayment.getPaymentType());
+        payment.setPriority(updatedPayment.getPriority());
+        payment.setExecutionDate(updatedPayment.getExecutionDate());
+
+        payment.setUpdatedAt(LocalDate.now());
+
+        return paymentRepository.save(payment);
+    }
+
+    public Payment executePayment(Long id) {
+
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new PaymentNotFoundException(id));
+
+        if ("executed".equals(payment.getStatus())) {
+            throw new IllegalStateException("Платёж уже выполнен");
+        }
+
+        if (!"created".equals(payment.getStatus())) {
+            throw new IllegalStateException("Платёж нельзя выполнить в текущем статусе: " + payment.getStatus());
+        }
+
+        payment.setStatus("executed");
+        payment.setUpdatedAt(LocalDate.now());
+
+        return paymentRepository.save(payment);
+    }
+
+    public Page<Payment> searchPayments(
+            String status,
+            Currency currency,
+            String recipient,
+            Pageable pageable) {
+
+        Specification<Payment> spec = Specification.where(null);
+
+        if (status != null && !status.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("status"), status));
+        }
+
+        if (currency != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("currency"), currency));
+        }
+
+        if (recipient != null && !recipient.isBlank()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(
+                            cb.lower(root.get("recipient")),
+                            "%" + recipient.toLowerCase() + "%"
+                    ));
+        }
+
+        return paymentRepository.findAll(spec, pageable);
     }
 }

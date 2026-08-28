@@ -1,50 +1,212 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8"/>
-    <title>Платежи</title>
+    <title>Управление платежами</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            padding: 7px;
+            margin: 4px 0;
+        }
+
+        .create-form {
+            max-width: 500px;
+        }
+
+        .status {
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body>
+
+<h1>Управление платежами</h1>
 
 <h3>Поиск платежа по ID</h3>
 
 <form action="/payment" method="get">
-    <input type="number" name="id" placeholder="ID платежа" required>
+    <input type="number" name="id" placeholder="ID платежа" min="1" required>
     <button type="submit">Найти</button>
 </form>
 
 <hr>
 
-<h1>Все платежи</h1>
-<table border="1">
+<h2>Все платежи</h2>
+
+<table>
+    <thead>
     <tr>
-        <th>ID</th><th>Сумма</th><th>Получатель</th><th>ИНН</th><th>Назначение</th><th>Статус</th><th>Дата</th><th>Действие</th>
+        <th>ID</th>
+        <th>Сумма</th>
+        <th>Валюта</th>
+        <th>Получатель</th>
+        <th>ИНН</th>
+        <th>Назначение</th>
+        <th>Тип</th>
+        <th>Приоритет</th>
+        <th>Статус</th>
+        <th>Описание</th>
+        <th>Создал</th>
+        <th>Дата создания</th>
+        <th>Дата изменения</th>
+        <th>Дата исполнения</th>
+        <th>Действие</th>
     </tr>
+    </thead>
+
+    <tbody>
     <tr th:each="p : ${payments}">
-        <td th:text="${p.id}">ID</td>
-        <td th:text="${p.amount}">Сумма</td>
-        <td th:text="${p.recipient}">Получатель</td>
-        <td th:text="${p.inn}">ИНН</td>
-        <td th:text="${p.purpose}">Назначение</td>
-        <td th:text="${p.status}">Статус</td>
-        <td th:text="${p.createdAt}">Дата</td>
+        <td th:text="${p.id}">1</td>
+        <td th:text="${p.amount}">1000.00</td>
+        <td th:text="${p.currency}">RUB</td>
+        <td th:text="${p.recipient}">ООО Ромашка</td>
+        <td th:text="${p.inn}">1234567890</td>
+        <td th:text="${p.purpose}">Оплата</td>
+        <td th:text="${p.paymentType}">ORDINARY</td>
+        <td th:text="${p.priority}">NORMAL</td>
+        <td class="status" th:text="${p.status}">created</td>
+        <td th:text="${p.description}">Описание</td>
+        <td th:text="${p.createdBy}">user</td>
+        <td th:text="${p.createdAt}">2026-08-27</td>
+        <td th:text="${p.updatedAt}">2026-08-27</td>
+        <td th:text="${p.executionDate}">2026-08-30</td>
         <td>
             <form th:action="@{/delete/{id}(id=${p.id})}" method="post">
-                <button type="submit" onclick="return confirm('Удалить платёж?');">
+                <button type="submit"
+                        onclick="return confirm('Удалить платёж?');">
                     Удалить
                 </button>
             </form>
         </td>
     </tr>
+    </tbody>
 </table>
 
 <h2>Новый платёж</h2>
-<form th:action="@{/payments}" th:object="${payment}" method="post">
-    Сумма: <input type="text" th:field="*{amount}" /><br/>
-    Получатель: <input type="text" th:field="*{recipient}" /><br/>
-    ИНН: <input type="text" th:field="*{inn}" /><br/>
-    Назначение: <input type="text" th:field="*{purpose}" /><br/>
+
+<form class="create-form"
+      th:action="@{/payments}"
+      th:object="${payment}"
+      method="post">
+
+    <div>
+        <label>Сумма:</label><br>
+        <input type="number"
+               th:field="*{amount}"
+               min="0.01"
+               step="0.01"
+               required>
+    </div>
+
+    <div>
+        <label>Валюта:</label><br>
+        <select th:field="*{currency}" required>
+            <option value="">Выберите валюту</option>
+            <option th:each="currency : ${currencies}"
+                    th:value="${currency}"
+                    th:text="${currency}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label>Получатель:</label><br>
+        <input type="text"
+               th:field="*{recipient}"
+               required>
+    </div>
+
+    <div>
+        <label>ИНН:</label><br>
+        <input type="text"
+               th:field="*{inn}"
+               required>
+    </div>
+
+    <div>
+        <label>Назначение:</label><br>
+        <input type="text"
+               th:field="*{purpose}"
+               required>
+    </div>
+
+    <div>
+        <label>Тип платежа:</label><br>
+        <select th:field="*{paymentType}" required>
+            <option value="">Выберите тип</option>
+            <option th:each="type : ${paymentTypes}"
+                    th:value="${type}"
+                    th:text="${type}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label>Приоритет:</label><br>
+        <select th:field="*{priority}" required>
+            <option value="">Выберите приоритет</option>
+            <option th:each="priority : ${priorities}"
+                    th:value="${priority}"
+                    th:text="${priority}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label>Описание:</label><br>
+        <textarea th:field="*{description}"
+                  rows="3"
+                  cols="40"></textarea>
+    </div>
+
+    <div>
+        <label>Дата исполнения:</label><br>
+        <input type="date"
+               th:field="*{executionDate}">
+    </div>
+
+    <div>
+        <label>Создал:</label><br>
+        <input type="text"
+               th:field="*{createdBy}"
+               required>
+    </div>
+
+    <br>
+
     <button type="submit">Создать платёж</button>
+
 </form>
 
 </body>
