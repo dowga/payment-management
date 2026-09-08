@@ -46,6 +46,16 @@
         .status {
             font-weight: bold;
         }
+
+        .status-created {
+        color: #1565c0;
+        font-weight: bold;
+        }
+
+        .status-executed {
+        color: #2e7d32;
+        font-weight: bold;
+        }
     </style>
 </head>
 
@@ -53,11 +63,141 @@
 
 <h1>Управление платежами</h1>
 
+<hr>
+
+<h2>Новый платёж</h2>
+
+<form class="create-form"
+      th:action="@{/payments}"
+      th:object="${payment}"
+      method="post">
+
+    <div>
+        <label>Сумма:</label><br>
+        <input type="number"
+               th:field="*{amount}"
+               min="0.01"
+               step="0.01"
+               required>
+    </div>
+
+    <div>
+        <label>Валюта:</label><br>
+        <select th:field="*{currency}" required>
+            <option value="">Выберите валюту</option>
+            <option th:each="currency : ${currencies}"
+                    th:value="${currency}"
+                    th:text="${currency}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label>Получатель:</label><br>
+        <input type="text" th:field="*{recipient}" required>
+    </div>
+
+    <div>
+        <label>ИНН:</label><br>
+        <input type="text" th:field="*{inn}" required>
+    </div>
+
+    <div>
+        <label>Назначение:</label><br>
+        <input type="text" th:field="*{purpose}" required>
+    </div>
+
+    <div>
+        <label>Тип платежа:</label><br>
+        <select th:field="*{paymentType}" required>
+            <option value="">Выберите тип</option>
+            <option th:each="type : ${paymentTypes}"
+                    th:value="${type}"
+                    th:text="${type}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label>Приоритет:</label><br>
+        <select th:field="*{priority}" required>
+            <option value="">Выберите приоритет</option>
+            <option th:each="priority : ${priorities}"
+                    th:value="${priority}"
+                    th:text="${priority}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <label>Описание:</label><br>
+        <textarea th:field="*{description}"
+                  rows="3"
+                  cols="40"></textarea>
+    </div>
+
+    <div>
+        <label>Дата исполнения:</label><br>
+        <input type="date" th:field="*{executionDate}">
+    </div>
+
+    <div>
+        <label>Создал:</label><br>
+        <input type="text" th:field="*{createdBy}" required>
+    </div>
+
+    <br>
+
+    <button type="submit">Создать платёж</button>
+</form>
+
+<hr>
+
 <h3>Поиск платежа по ID</h3>
 
 <form action="/payment" method="get">
     <input type="number" name="id" placeholder="ID платежа" min="1" required>
     <button type="submit">Найти</button>
+</form>
+
+<hr>
+
+<h3>Фильтры</h3>
+
+<form action="/" method="get">
+
+    <label>Статус:</label>
+
+    <select name="status">
+        <option value="">Все</option>
+
+        <option value="created"
+                th:selected="${param.status != null and param.status[0] == 'created'}">
+            CREATED
+        </option>
+
+        <option value="executed"
+                th:selected="${param.status != null and param.status[0] == 'executed'}">
+            EXECUTED
+        </option>
+    </select>
+
+    <label>Валюта:</label>
+
+    <select name="currency">
+        <option value="">Все</option>
+
+        <option th:each="c : ${currencies}"
+                th:value="${c}"
+                th:text="${c}"
+                th:selected="${param.currency != null and param.currency[0] == c.name()}">
+        </option>
+    </select>
+
+    <button type="submit">Применить</button>
+
+    <a href="/">Сбросить</a>
+
 </form>
 
 <hr>
@@ -95,119 +235,44 @@
         <td th:text="${p.purpose}">Оплата</td>
         <td th:text="${p.paymentType}">ORDINARY</td>
         <td th:text="${p.priority}">NORMAL</td>
-        <td class="status" th:text="${p.status}">created</td>
+        <td th:class="${p.status == 'created' ? 'status-created' : 'status-executed'}"
+            th:text="${p.status}">
+            created
+        </td>
         <td th:text="${p.description}">Описание</td>
         <td th:text="${p.createdBy}">user</td>
         <td th:text="${p.createdAt}">2026-08-27</td>
         <td th:text="${p.updatedAt}">2026-08-27</td>
         <td th:text="${p.executionDate}">2026-08-30</td>
         <td>
-            <form th:action="@{/delete/{id}(id=${p.id})}" method="post">
+
+            <form th:if="${p.status == 'created'}"
+                  th:action="@{/execute/{id}(id=${p.id})}"
+                  method="post"
+                  style="display: inline;">
+
+                <button type="submit"
+                        onclick="return confirm('Выполнить платёж?');">
+                    Выполнить
+                </button>
+
+            </form>
+
+            <form th:action="@{/delete/{id}(id=${p.id})}"
+                  method="post"
+                  style="display: inline;">
+
                 <button type="submit"
                         onclick="return confirm('Удалить платёж?');">
                     Удалить
                 </button>
+
             </form>
+
         </td>
     </tr>
     </tbody>
 </table>
-
-<h2>Новый платёж</h2>
-
-<form class="create-form"
-      th:action="@{/payments}"
-      th:object="${payment}"
-      method="post">
-
-    <div>
-        <label>Сумма:</label><br>
-        <input type="number"
-               th:field="*{amount}"
-               min="0.01"
-               step="0.01"
-               required>
-    </div>
-
-    <div>
-        <label>Валюта:</label><br>
-        <select th:field="*{currency}" required>
-            <option value="">Выберите валюту</option>
-            <option th:each="currency : ${currencies}"
-                    th:value="${currency}"
-                    th:text="${currency}">
-            </option>
-        </select>
-    </div>
-
-    <div>
-        <label>Получатель:</label><br>
-        <input type="text"
-               th:field="*{recipient}"
-               required>
-    </div>
-
-    <div>
-        <label>ИНН:</label><br>
-        <input type="text"
-               th:field="*{inn}"
-               required>
-    </div>
-
-    <div>
-        <label>Назначение:</label><br>
-        <input type="text"
-               th:field="*{purpose}"
-               required>
-    </div>
-
-    <div>
-        <label>Тип платежа:</label><br>
-        <select th:field="*{paymentType}" required>
-            <option value="">Выберите тип</option>
-            <option th:each="type : ${paymentTypes}"
-                    th:value="${type}"
-                    th:text="${type}">
-            </option>
-        </select>
-    </div>
-
-    <div>
-        <label>Приоритет:</label><br>
-        <select th:field="*{priority}" required>
-            <option value="">Выберите приоритет</option>
-            <option th:each="priority : ${priorities}"
-                    th:value="${priority}"
-                    th:text="${priority}">
-            </option>
-        </select>
-    </div>
-
-    <div>
-        <label>Описание:</label><br>
-        <textarea th:field="*{description}"
-                  rows="3"
-                  cols="40"></textarea>
-    </div>
-
-    <div>
-        <label>Дата исполнения:</label><br>
-        <input type="date"
-               th:field="*{executionDate}">
-    </div>
-
-    <div>
-        <label>Создал:</label><br>
-        <input type="text"
-               th:field="*{createdBy}"
-               required>
-    </div>
-
-    <br>
-
-    <button type="submit">Создать платёж</button>
-
-</form>
 
 </body>
 </html>
