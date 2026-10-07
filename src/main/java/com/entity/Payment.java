@@ -33,10 +33,6 @@ public class Payment {
     private String status;
     private String description;
 
-    @NotBlank(message = "Создатель платежа обязателен")
-    private String createdBy;
-
-    private LocalDate updatedAt;
     private LocalDate createdAt;
     private LocalDate executionDate;
 
@@ -44,13 +40,6 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private Currency currency;
 
-    @NotNull(message = "Тип платежа обязателен")
-    @Enumerated(EnumType.STRING)
-    private PaymentType paymentType;
-
-    @NotNull(message = "Приоритет обязателен")
-    @Enumerated(EnumType.STRING)
-    private PaymentPriority priority;
 
     public Payment() {
         this.createdAt = LocalDate.now();
@@ -109,22 +98,6 @@ public class Payment {
         this.description = description;
     }
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDate getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDate updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public LocalDate getCreatedAt() {
         return createdAt;
     }
@@ -147,21 +120,5 @@ public class Payment {
 
     public void setCurrency(Currency currency) {
         this.currency = currency;
-    }
-
-    public PaymentType getPaymentType() {
-        return paymentType;
-    }
-
-    public void setPaymentType(PaymentType paymentType) {
-        this.paymentType = paymentType;
-    }
-
-    public PaymentPriority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(PaymentPriority priority) {
-        this.priority = priority;
     }
 }

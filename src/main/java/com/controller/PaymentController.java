@@ -2,8 +2,6 @@ package com.controller;
 
 import com.entity.Currency;
 import com.entity.Payment;
-import com.entity.PaymentPriority;
-import com.entity.PaymentType;
 import com.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -43,8 +41,6 @@ public class PaymentController {
 
         model.addAttribute("payment", new Payment());
         model.addAttribute("currencies", Currency.values());
-        model.addAttribute("paymentTypes", PaymentType.values());
-        model.addAttribute("priorities", PaymentPriority.values());
 
         return "index";
     }

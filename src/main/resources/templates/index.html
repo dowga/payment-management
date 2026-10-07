@@ -108,42 +108,10 @@
     </div>
 
     <div>
-        <label>Тип платежа:</label><br>
-        <select th:field="*{paymentType}" required>
-            <option value="">Выберите тип</option>
-            <option th:each="type : ${paymentTypes}"
-                    th:value="${type}"
-                    th:text="${type}">
-            </option>
-        </select>
-    </div>
-
-    <div>
-        <label>Приоритет:</label><br>
-        <select th:field="*{priority}" required>
-            <option value="">Выберите приоритет</option>
-            <option th:each="priority : ${priorities}"
-                    th:value="${priority}"
-                    th:text="${priority}">
-            </option>
-        </select>
-    </div>
-
-    <div>
         <label>Описание:</label><br>
         <textarea th:field="*{description}"
                   rows="3"
                   cols="40"></textarea>
-    </div>
-
-    <div>
-        <label>Дата исполнения:</label><br>
-        <input type="date" th:field="*{executionDate}">
-    </div>
-
-    <div>
-        <label>Создал:</label><br>
-        <input type="text" th:field="*{createdBy}" required>
     </div>
 
     <br>
@@ -213,13 +181,9 @@
         <th>Получатель</th>
         <th>ИНН</th>
         <th>Назначение</th>
-        <th>Тип</th>
-        <th>Приоритет</th>
         <th>Статус</th>
         <th>Описание</th>
-        <th>Создал</th>
         <th>Дата создания</th>
-        <th>Дата изменения</th>
         <th>Дата исполнения</th>
         <th>Действие</th>
     </tr>
@@ -233,16 +197,12 @@
         <td th:text="${p.recipient}">ООО Ромашка</td>
         <td th:text="${p.inn}">1234567890</td>
         <td th:text="${p.purpose}">Оплата</td>
-        <td th:text="${p.paymentType}">ORDINARY</td>
-        <td th:text="${p.priority}">NORMAL</td>
         <td th:class="${p.status == 'created' ? 'status-created' : 'status-executed'}"
             th:text="${p.status}">
             created
         </td>
         <td th:text="${p.description}">Описание</td>
-        <td th:text="${p.createdBy}">user</td>
         <td th:text="${p.createdAt}">2026-08-27</td>
-        <td th:text="${p.updatedAt}">2026-08-27</td>
         <td th:text="${p.executionDate}">2026-08-30</td>
         <td>
 
