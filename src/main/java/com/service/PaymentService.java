@@ -2,6 +2,7 @@ package com.service;
 
 import com.entity.Payment;
 import com.entity.Currency;
+import com.kafka.PaymentEventPublisher;
 import org.springframework.data.jpa.domain.Specification;
 import com.repository.PaymentRepository;
 import com.service.exception.PaymentNotFoundException;
@@ -18,6 +19,9 @@ public class PaymentService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private PaymentEventPublisher paymentEventPublisher;
 
     public Payment createPayment(Payment payment) {
         LocalDate now = LocalDate.now();
@@ -73,7 +77,11 @@ public class PaymentService {
         payment.setStatus("executed");
         payment.setExecutionDate(LocalDate.now());
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+
+        paymentEventPublisher.publishExecuted(savedPayment);
+
+        return savedPayment;
     }
 
     public Page<Payment> searchPayments(
