@@ -1,7 +1,7 @@
 package com.kafka;
 
-import com.entity.Payment;
 import com.event.PaymentExecutedEvent;
+import com.outbox.OutboxEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +15,16 @@ public class PaymentEventPublisher {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void publishExecuted(Payment payment) {
+    public void publishExecuted(OutboxEvent outboxEvent) {
 
         PaymentExecutedEvent event = new PaymentExecutedEvent(
-                payment.getId(),
-                payment.getStatus()
+                outboxEvent.getPaymentId(),
+                outboxEvent.getStatus()
         );
 
         kafkaTemplate.send(
                 "payment-events",
-                payment.getId().toString(),
+                outboxEvent.getPaymentId().toString(),
                 event
         ).join();
     }

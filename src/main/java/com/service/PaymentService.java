@@ -2,7 +2,6 @@ package com.service;
 
 import com.entity.Payment;
 import com.entity.Currency;
-import com.kafka.PaymentEventPublisher;
 import org.springframework.data.jpa.domain.Specification;
 import com.repository.PaymentRepository;
 import com.service.exception.PaymentNotFoundException;
@@ -10,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.outbox.OutboxEvent;
+import com.repository.OutboxRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,7 +23,7 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private PaymentEventPublisher paymentEventPublisher;
+    private OutboxRepository outboxRepository;
 
     public Payment createPayment(Payment payment) {
         LocalDate now = LocalDate.now();
@@ -61,6 +63,7 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
+    @Transactional
     public Payment executePayment(Long id) {
 
         Payment payment = paymentRepository.findById(id)
@@ -71,7 +74,10 @@ public class PaymentService {
         }
 
         if (!"created".equals(payment.getStatus())) {
-            throw new IllegalStateException("Платёж нельзя выполнить в текущем статусе: " + payment.getStatus());
+            throw new IllegalStateException(
+                    "Платёж нельзя выполнить в текущем статусе: "
+                            + payment.getStatus()
+            );
         }
 
         payment.setStatus("executed");
@@ -79,7 +85,12 @@ public class PaymentService {
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        paymentEventPublisher.publishExecuted(savedPayment);
+        outboxRepository.save(
+                new OutboxEvent(
+                        savedPayment.getId(),
+                        savedPayment.getStatus()
+                )
+        );
 
         return savedPayment;
     }
